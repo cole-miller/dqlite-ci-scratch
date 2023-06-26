@@ -8,7 +8,6 @@ env:
 
 jobs:
   build-and-test:
-    strategy:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
