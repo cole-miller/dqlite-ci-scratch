@@ -10,14 +10,15 @@ jobs:
   build-and-test:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout code
+      - name: Check out code
         run: |
-          git clone https://github.com/canonical/raft
-          git clone https://github.com/canonical/dqlite
-          git clone https://github.com/canonical/go-dqlite
-          git clone https://github.com/canonical/jepsen.dqlite
-      - name: Install dependencies
+          git clone --depth 1 https://github.com/canonical/raft
+          git clone --depth 1 https://github.com/canonical/dqlite
+          git clone --depth 1 https://github.com/canonical/go-dqlite
+          git clone --depth 1 https://github.com/canonical/jepsen.dqlite
+      - name: Install apt dependencies
         run: |
+          sudo apt update
           sudo apt-get install \
             gcc \
             gnuplot \
@@ -27,9 +28,16 @@ jobs:
             liblz4-dev \
             libsqlite3-dev \
             libuv1-dev
-          sudo snap install go --classic
-      - name: Build and install raft
-        shell: bash
+      - name: Install Go toolchain
+        uses: actions/setup-go@v3
+      - name: Check raft
+        if: ${{ inputs.check-raft }}
+        run: |
+          cd raft
+          autoreconf -i
+          ./configure --enable-debug --enable-uv
+          make -j$(nproc) check
+      - name: Install raft (fast)
         run: |
           shopt -s globstar
           cd raft
@@ -38,23 +46,45 @@ jobs:
           sudo install -d /usr/include/raft
           sudo install -m644 include/raft/uv.h /usr/include/raft
           sudo install -m644 libraft.so /usr/lib
-      - name: Build and install dqlite
         shell: bash
+      - name: Check dqlite
+        if: ${{ inputs.check-dqlite }}
+        run: |
+          cd dqlite
+          autoreconf -i
+          ./configure --enable-debug
+          make -j$(nproc) check
+      - name: Install dqlite (fast)
         run: |
           shopt -s globstar
           cd dqlite
           gcc -shared -fPIC -g3 -D_GNU_SOURCE src/**/*.c -o libdqlite.so -lsqlite3 -lraft
           sudo install -m644 include/dqlite.h /usr/include
           sudo install -m644 libdqlite.so /usr/lib
-      - name: Run dqlite tests
-        run: 'true'
-      - name: Build and install go-dqlite
+        shell: bash
+      - name: Check go-dqlite
+        if: ${{ inputs.check-go-dqlite }}
         run: |
           cd go-dqlite
-          go build ./...
-      - name: Run go-dqlite tests
+          go test -tags nosqlite3 ./...
+      - name: Prepare for Jepsen
         run: |
-          cd go-dqlite
-          go test ./...
+          printf core | sudo tee /proc/sys/kernel/core_pattern
       - name: Run Jepsen tests
-        run: 'true'
+        run: |
+          cd jepsen.dqlite
+          go get golang.org/x/sync/semaphore
+          echo 'replace github.com/canonical/go-dqlite => ../go-dqlite' >>go.mod
+          go build -tags nosqlite3 -o resources/app resources/app.go
+          sudo ufw disable
+          sleep 0.2
+          sudo systemctl stop ufw
+          sudo ./resources/network.sh setup 5
+          lein run test --no-ssh --binary $(pwd)/resources/app \
+            --workload append \
+            --nemesis stop \
+            --rate 100 \
+            --time-limit 240 \
+            --disk 0
+          sudo ./resources/network.sh teardown 5
+
