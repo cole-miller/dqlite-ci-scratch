@@ -102,6 +102,9 @@ jobs:
           ./configure --enable-debug
           make -j$(nproc) check
       - name: Install dqlite (fast)
+        env:
+          RAFT_CFLAGS:
+          RAFT_LIBS: -lraft
         run: |
           shopt -s globstar
           cd dqlite
