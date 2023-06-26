@@ -97,7 +97,7 @@ jobs:
       - name: Check dqlite
         if: ${{ inputs.check-dqlite }}
         env:
-          RAFT_CFLAGS:
+          RAFT_CFLAGS: ''
           RAFT_LIBS: -lraft
         run: |
           cd dqlite
