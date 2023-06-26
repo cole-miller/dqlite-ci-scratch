@@ -33,7 +33,7 @@ jobs:
         run: |
           shopt -s globstar
           pushd raft
-          gcc -shared -fPIC -g3 -DLZ4_AVAILABLE -DLZ4_ENABLED -DHAVE_LINUX_AIO_ABI_H src/**/*.c -o libraft.so -luv -llz4
+          gcc -shared -fPIC -g3 -D_GNU_SOURCE -DLZ4_AVAILABLE -DLZ4_ENABLED -DHAVE_LINUX_AIO_ABI_H src/**/*.c -o libraft.so -luv -llz4
           sudo install -m644 include/raft.h /usr/include
           sudo install -d /usr/include/raft
           sudo install -m644 include/raft/uv.h /usr/include/raft
@@ -44,7 +44,7 @@ jobs:
         run: |
           shopt -s globstar
           pushd dqlite
-          gcc -shared -fPIC -g3 src/**/*.c -lsqlite3 -lraft
+          gcc -shared -fPIC -g3 -D_GNU_SOURCE src/**/*.c -lsqlite3 -lraft
           sudo install -m644 include/dqlite.h
           sudo install -m644 libdqlite.so /usr/lib
           popd
