@@ -11,10 +11,11 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
-        run: git clone https://github.com/canonical/raft
-        run: git clone https://github.com/canonical/dqlite
-        run: git clone https://github.com/canonical/go-dqlite
-        run: git clone https://github.com/canonical/jepsen.dqlite
+        run: |
+          git clone https://github.com/canonical/raft
+          git clone https://github.com/canonical/dqlite
+          git clone https://github.com/canonical/go-dqlite
+          git clone https://github.com/canonical/jepsen.dqlite
       - name: Install dependencies
         run: |
           sudo apt-get install \
@@ -26,11 +27,12 @@ jobs:
             liblz4-dev \
             libsqlite3-dev \
             libuv1-dev
-        run: sudo snap install go --classic
+          sudo snap install go --classic
       - name: Build and install raft
-        run: cd raft
-        run: gcc -shared -fPIC -g3 -DLZ4_AVAILABLE -DLZ4_ENABLED src/*.c -o libraft.so
-        run: install -m644 libraft.so /usr/lib
+        run: |
+          cd raft
+          gcc -shared -fPIC -g3 -DLZ4_AVAILABLE -DLZ4_ENABLED src/*.c -o libraft.so
+          install -m644 libraft.so /usr/lib
       - name: Build and install dqlite
         run: 'true'
       - name: Run dqlite tests
