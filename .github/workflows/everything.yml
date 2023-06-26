@@ -44,7 +44,7 @@ jobs:
         run: |
           shopt -s globstar
           pushd dqlite
-          gcc -shared -fPIC -g3 -D_GNU_SOURCE src/**/*.c -lsqlite3 -lraft
+          gcc -shared -fPIC -g3 -D_GNU_SOURCE src/**/*.c -o libdqlite.so -lsqlite3 -lraft
           sudo install -m644 include/dqlite.h /usr/include
           sudo install -m644 libdqlite.so /usr/lib
           popd
