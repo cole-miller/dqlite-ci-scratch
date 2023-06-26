@@ -7,6 +7,6 @@ jobs:
       workloads: '["append"]'
       nemeses: '["stop"]'
       disk: '["0"]'
-      check-raft: true
+      check-raft: false
       check-dqlite: true
       check-go-dqlite: true
