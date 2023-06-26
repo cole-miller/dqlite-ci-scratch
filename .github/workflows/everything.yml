@@ -35,6 +35,7 @@ jobs:
           pushd raft
           gcc -shared -fPIC -g3 -DLZ4_AVAILABLE -DLZ4_ENABLED -DHAVE_LINUX_AIO_ABI_H src/**/*.c -o libraft.so -luv -llz4
           sudo install -m644 include/raft.h include/raft/uv.h -d /usr/include
+          ls -l /usr/include
           sudo install -m644 libraft.so /usr/lib
           popd
       - name: Build and install dqlite
