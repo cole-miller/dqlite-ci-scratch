@@ -97,8 +97,8 @@ jobs:
       - name: Check dqlite
         if: ${{ inputs.check-dqlite }}
         env:
-          RAFT_CFLAGS: ''
-          RAFT_LIBS: -lraft
+          RAFT_CFLAGS: -I/usr/include
+          RAFT_LIBS: -L/usr/lib -lraft
         run: |
           cd dqlite
           autoreconf -i
