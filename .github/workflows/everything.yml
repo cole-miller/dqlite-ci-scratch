@@ -32,7 +32,8 @@ jobs:
         run: |
           cd raft
           gcc -shared -fPIC -g3 -DLZ4_AVAILABLE -DLZ4_ENABLED -DHAVE_LINUX_AIO_ABI_H src/*.c -o libraft.so
-          install -m644 libraft.so /usr/lib
+          sudo install -m644 libraft.so /usr/lib
+          ls -l /usr/lib/libraft.so
       - name: Build and install dqlite
         run: 'true'
       - name: Run dqlite tests
