@@ -1,0 +1,39 @@
+name: End-to-end tests
+on: [push, pull_request]
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  LIBRAFT_TRACE: 1
+  LIBDQLITE_TRACE: 1
+
+jobs:
+  build-and-test:
+    strategy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        run: git clone https://github.com/canonical/raft
+        run: git clone https://github.com/canonical/dqlite
+        run: git clone https://github.com/canonical/go-dqlite
+        run: git clone https://github.com/canonical/jepsen.dqlite
+      - name: Install dependencies
+        run: |
+          sudo apt-get install \
+            gcc \
+            gnuplot \
+            graphviz \
+            leiningen \
+            libjna-java \
+            liblz4-dev \
+            libsqlite3-dev \
+            libuv1-dev
+        run: sudo snap install go --classic
+      - name: Build and install raft
+        run: cd raft
+        run: gcc -shared -fPIC -g3 -DLZ4_AVAILABLE -DLZ4_ENABLED src/*.c -o libraft.so
+        run: install -m644 libraft.so /usr/lib
+      - name: Build and install dqlite
+      - name: Run dqlite tests
+      - name: Build and install go-dqlite
+      - name: Run go-dqlite tests
+      - name: Run Jepsen tests
