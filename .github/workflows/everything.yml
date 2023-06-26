@@ -59,9 +59,9 @@ jobs:
     steps:
       - name: Check out code
         run: |
-          git clone --depth 1 --branch ${{ inputs.raft-branch || master }} ${{ inputs.raft-repo || https://github.com/canonical/raft }} raft
-          git clone --depth 1 --branch ${{ inputs.dqlite-branch || master }} ${{ inputs.dqlite-repo || https://github.com/canonical/dqlite }} dqlite
-          git clone --depth 1 --branch ${{ inputs.go-dqlite-branch || master }} ${{ inputs.go-dqlite-repo || https://github.com/canonical/go-dqlite }} go-dqlite
+          git clone --depth 1 --branch ${{ inputs.raft-branch || 'master' }} ${{ inputs.raft-repo || 'https://github.com/canonical/raft' }} raft
+          git clone --depth 1 --branch ${{ inputs.dqlite-branch || 'master' }} ${{ inputs.dqlite-repo || 'https://github.com/canonical/dqlite' }} dqlite
+          git clone --depth 1 --branch ${{ inputs.go-dqlite-branch || 'master' }} ${{ inputs.go-dqlite-repo || 'https://github.com/canonical/go-dqlite' }} go-dqlite
           git clone --depth 1 https://github.com/canonical/jepsen.dqlite
       - name: Install apt dependencies
         run: |
