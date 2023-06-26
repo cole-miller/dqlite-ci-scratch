@@ -132,10 +132,10 @@ jobs:
           sudo systemctl stop ufw
           sudo ./resources/network.sh setup 5
           lein run test --no-ssh --binary $(pwd)/resources/app \
-            --workload append \
-            --nemesis stop \
+            --workload ${{ matrix.workload }} \
+            --nemesis ${{ matrix.nemesis }} \
             --rate 100 \
             --time-limit 240 \
-            --disk 0
+            --disk ${{ matrix.disk }}
           sudo ./resources/network.sh teardown 5
 
