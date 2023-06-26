@@ -29,13 +29,21 @@ jobs:
             libuv1-dev
           sudo snap install go --classic
       - name: Build and install raft
+        shell: bash
         run: |
-          cd raft
-          gcc -shared -fPIC -g3 -DLZ4_AVAILABLE -DLZ4_ENABLED -DHAVE_LINUX_AIO_ABI_H src/*.c -o libraft.so
+          shopt -s globstar
+          pushd raft
+          gcc -shared -fPIC -g3 -DLZ4_AVAILABLE -DLZ4_ENABLED -DHAVE_LINUX_AIO_ABI_H src/**/*.c -o libraft.so -luv -llz4
           sudo install -m644 libraft.so /usr/lib
-          ls -l /usr/lib/libraft.so
+          popd
       - name: Build and install dqlite
-        run: 'true'
+        shell: bash
+        run: |
+          shopt -s globstar
+          pushd dqlite
+          gcc -shared -fPIC -g3 src/**/*.c -lsqlite3 -lraft
+          sudo install -m644 libdqlite.so /usr/lib
+          popd
       - name: Run dqlite tests
         run: 'true'
       - name: Build and install go-dqlite
