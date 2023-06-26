@@ -53,6 +53,8 @@ jobs:
           cd go-dqlite
           go build ./...
       - name: Run go-dqlite tests
-        run: 'true'
+        run: |
+          cd go-dqlite
+          go test ./...
       - name: Run Jepsen tests
         run: 'true'
