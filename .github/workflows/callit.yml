@@ -1,0 +1,11 @@
+name: Example
+jobs:
+  doit:
+    uses: cole-miller/dqlite-ci-scratch/.github/workflows/everything.yml@master
+    with:
+      workloads: '["append"]'
+      nemeses: '["stop"]'
+      disk: '["0"]'
+      check-raft: true
+      check-dqlite: true
+      check-go-dqlite: true

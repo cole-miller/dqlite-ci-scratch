@@ -1,5 +1,46 @@
 name: End-to-end tests
-on: [push, pull_request]
+on:
+  workflow_call:
+    inputs:
+      raft-repo:
+        type: string
+        required: false
+      raft-branch:
+        type: string
+        required: false
+      dqlite-repo:
+        type: string
+        required: false
+      dqlite-branch:
+        type: string
+        required: false
+      go-dqlite-repo:
+        type: string
+        required: false
+      go-dqlite-branch:
+        type: string
+        required: false
+      workloads:
+        type: string
+        required: true
+      nemeses:
+        type: string
+        required: true
+      disk:
+        type: string
+        required: true
+      extra-jepsen-opts:
+        type: string
+        required: false
+      check-raft:
+        type: boolean
+        required: true
+      check-dqlite:
+        type: boolean
+        required: true
+      check-go-dqlite:
+        type: boolean
+        required: true
 
 env:
   DEBIAN_FRONTEND: noninteractive
@@ -8,13 +49,19 @@ env:
 
 jobs:
   build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        workload: ${{ fromJSON(inputs.workloads) }}
+        nemesis: ${{ fromJSON(inputs.nemeses) }}
+        disk: ${{ fromJSON(inputs.disk) }}
     runs-on: ubuntu-22.04
     steps:
       - name: Check out code
         run: |
-          git clone --depth 1 https://github.com/canonical/raft
-          git clone --depth 1 https://github.com/canonical/dqlite
-          git clone --depth 1 https://github.com/canonical/go-dqlite
+          git clone --depth 1 --branch ${{ inputs.raft-branch || master }} ${{ inputs.raft-repo || https://github.com/canonical/raft }} raft
+          git clone --depth 1 --branch ${{ inputs.dqlite-branch || master }} ${{ inputs.dqlite-repo || https://github.com/canonical/dqlite }} dqlite
+          git clone --depth 1 --branch ${{ inputs.go-dqlite-branch || master }} ${{ inputs.go-dqlite-repo || https://github.com/canonical/go-dqlite }} go-dqlite
           git clone --depth 1 https://github.com/canonical/jepsen.dqlite
       - name: Install apt dependencies
         run: |
@@ -73,8 +120,8 @@ jobs:
       - name: Run Jepsen tests
         run: |
           cd jepsen.dqlite
-          go get golang.org/x/sync/semaphore
           echo 'replace github.com/canonical/go-dqlite => ../go-dqlite' >>go.mod
+          go get golang.org/x/sync/semaphore
           go build -tags nosqlite3 -o resources/app resources/app.go
           sudo ufw disable
           sleep 0.2
