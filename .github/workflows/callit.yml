@@ -1,11 +1,13 @@
 name: Example
 on: push
 jobs:
-  - name: blah
-    run: |
-      mkdir blah
-      cd blah
-      touch gnargh
-  - name: another
-    run: |
-      ls
+  go:
+    steps:
+    - name: blah
+      run: |
+        mkdir blah
+        cd blah
+        touch gnargh
+    - name: another
+      run: |
+        ls
