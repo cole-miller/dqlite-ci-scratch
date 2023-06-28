@@ -2,6 +2,7 @@ name: Example
 on: push
 jobs:
   go:
+    runs-on: ubuntu-latest
     steps:
     - name: blah
       run: |
