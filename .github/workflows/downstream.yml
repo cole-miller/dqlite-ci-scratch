@@ -1,0 +1,67 @@
+name: Downstream checks
+
+on:
+  issue_comment:
+    types: [created, edited]
+
+jobs:
+  doit:
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '/downstream') }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: install apt deps
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt update
+          sudo apt install automake libtool gcc make liblz4-dev libuv1-dev libsqlite3-dev
+
+      - name: install Go
+        uses: actions/setup-go@v4
+
+      - name: check out raft
+        uses: actions/checkout@v3
+        with:
+          repository: canonical/raft
+          ref: refs/pull/${{ github.event.issue.number }}
+          path: raft
+
+      - name: install raft
+        run: |
+          cd raft
+          autoreconf -i
+          ./configure --enable-debug --enable-uv
+          sudo make -j$(nproc) install
+          sudo ldconfig
+
+      - name: check out dqlite
+        uses: actions/checkout@v3
+        with:
+          repository: canonical/dqlite 
+          path: dqlite
+
+      - name: test and install dqlite
+        run: |
+          cd dqlite
+          autoreconf -i
+          ./configure --enable-debug
+          sudo make -j$(nproc) check || (cat ./test-suite.log && false)
+          sudo make install
+          sudo ldconfig
+
+      - name: check out go-dqlite
+        uses: actions/checkout@v3
+        with:
+          repository: canonical/go-dqlite
+          path: go-dqlite
+
+      - name: test go-dqlite
+        env:
+          GO_DQLITE_MULTITHREAD: '1'
+        run: |
+          cd go-dqlite
+          go get -tags libsqlite3 -t ./...
+          go test -v -race ./...
+          VERBOSE=1 DISK=${{ matrix.disk }} ./test/dqlite-demo.sh
+          VERBOSE=1 DISK=${{ matrix.disk }} ./test/roles.sh
+          VERBOSE=1 DISK=${{ matrix.disk }} ./test/recover.sh
