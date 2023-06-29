@@ -1,0 +1,20 @@
+name: Jepsen
+
+on:
+  issue_comment:
+    types: [created, edited]
+
+jobs:
+  doit:
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, 'please test jepsen') }}
+    uses: canonical/jepsen.dqlite/.github/workflows/test-build-run.yml@master
+    with:
+      raft-ref: refs/pull/446/head
+      workloads: >
+        ['append', 'bank', 'set']
+      nemeses: >
+        ['none', 'partition', 'kill', 'stop', 'disk', 'member',
+         'partition,stop', 'partition,kill', 'partition,member',
+         'packet,stop', 'pause']
+      disk: >
+        ['0']
